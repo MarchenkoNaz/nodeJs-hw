@@ -5,7 +5,7 @@ const crypto = require('node:crypto');
 const contactsPath = path.join(__dirname, '', 'db', 'contacts.json')
 
 async function write(data) {
-	return fs.writeFile(contactsPath, JSON.stringify(data))
+	return await fs.writeFile(contactsPath, JSON.stringify(data, null, 2))
 }
 async function read() {
 	const data = await fs.readFile(contactsPath, 'utf8')
@@ -20,28 +20,19 @@ async function listContacts() {
 async function getContactById(contactId) {
 	const data = await read()
 	const rightContact = data.find(contact => contact.id === contactId)
-	if (rightContact) {
-		return rightContact
-	}
-	return null
+
+	return rightContact || null
 }
 
 async function removeContact(contactId) {
-	const data = await read()
-
-	const index = data.findIndex(contact => contact.id === contactId)
-
+	const data = await read();
+	const index = data.findIndex((contact) => contact.id === contactId);
 	if (index === -1) {
-		return 'undefined'
+		return null;
 	}
-
-	newContacts = [
-		...data.slice(0, index),
-		...data.slice(index + 1)
-	]
-	await write(newContacts)
-
-	return data[index]
+	const [result] = data.splice(index, 1);
+	await write(data)
+	return result;
 }
 
 async function addContact(contact) {
@@ -58,6 +49,5 @@ async function addContact(contact) {
 
 	return newContact
 }
-
 
 module.exports = { listContacts, getContactById, removeContact, addContact }
